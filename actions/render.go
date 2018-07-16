@@ -3,6 +3,7 @@ package actions
 import (
 	"github.com/gobuffalo/buffalo/render"
 	"github.com/gobuffalo/packr"
+	"github.com/gobuffalo/plush"
 )
 
 var r *render.Engine
@@ -20,7 +21,7 @@ func init() {
 		// Add template helpers here:
 		Helpers: render.Helpers{
 			// uncomment for non-Bootstrap form helpers:
-			// "form":     plush.FormHelper,
+			"form": plush.FormHelper,
 			// "form_for": plush.FormForHelper,
 		},
 	})

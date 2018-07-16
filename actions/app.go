@@ -28,26 +28,24 @@ func App() *buffalo.App {
 			Env:         ENV,
 			SessionName: "_pdf_tool_session",
 		})
-		// Automatically redirect to SSL
+
 		app.Use(forceSSL())
+		app.Use(csrf.New)
 
 		if ENV == "development" {
 			app.Use(middleware.ParameterLogger)
 		}
 
-		// Protect against CSRF attacks. https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
-		// Remove to disable this.
-		app.Use(csrf.New)
-
-		// Wraps each request in a transaction.
-		//  c.Value("tx").(*pop.PopTransaction)
-		// Remove to disable this.
 		app.Use(middleware.PopTransaction(models.DB))
 
-		// Setup and use translations:
 		app.Use(translations())
 
 		app.GET("/", HomeHandler)
+		app.GET("/documents/{uuid}", DocumentsShow)
+		app.GET("/documents/{uuid}/download", DocumentDownload)
+		app.GET("/documents/{uuid}/preview", DocumentPreview)
+		app.GET("/documents/index", DocumentsIndex)
+		app.POST("/documents/create", DocumentsCreate)
 
 		app.ServeFiles("/", assetsBox) // serve files from the public directory
 	}
