@@ -1,4 +1,31 @@
-<h1><%= uuid %></h1>
-
-<a href="/documents/<%= uuid %>/download" target="_blank">Download</a>
-<a href="/documents/<%= uuid %>/preview" target="_blank">Preview</a>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-1"></div>
+    <div class="col-lg-10">
+      <div class="card">
+        <div class="card-header">
+          <h2>Document: <%= document.Name %> </h2>
+        </div>
+        <div class="card-body">
+          <table class="table table-responsive-sm table-bordered table-striped table-sm">
+            <tbody>
+              <tr><td># pages:</td><td><%= document.PageCount %></td></tr>
+              <tr><td>status:</td><td><%= document.Status %></td></tr>
+              <tr><td>Encrypted?</td><td><%= document.IsEncrypted %></td></tr>
+              <tr><td>Metadata:</td><td><%= document.Metadata %></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer">
+          <a href="/documents/<%= document.ID %>/download" target="_blank" class="btn btn-sm btn-primary">
+            <i class="fa fa-download"></i> Download
+          </a>
+          <a href="/documents/<%= document.ID %>/preview" target="_blank" class="btn btn-sm btn-success">
+            <i class="fa fa-eye"></i> Preview
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-1"></div>
+  </div>
+</div>

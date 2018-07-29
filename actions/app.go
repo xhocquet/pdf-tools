@@ -4,6 +4,7 @@ import (
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/buffalo/middleware"
 	"github.com/gobuffalo/buffalo/middleware/ssl"
+	"github.com/gobuffalo/buffalo/worker"
 	"github.com/gobuffalo/envy"
 	"github.com/unrolled/secure"
 
@@ -11,6 +12,10 @@ import (
 	"github.com/gobuffalo/buffalo/middleware/i18n"
 	"github.com/gobuffalo/packr"
 	"github.com/xhocquet/pdf_tool/models"
+	"github.com/xhocquet/pdf_tool/workers"
+
+	"github.com/gobuffalo/gocraft-work-adapter"
+	"github.com/gomodule/redigo/redis"
 )
 
 // ENV is used to help switch settings based on where the
@@ -18,6 +23,7 @@ import (
 var ENV = envy.Get("GO_ENV", "development")
 var app *buffalo.App
 var T *i18n.Translator
+var w worker.Worker
 
 // App is where all routes and middleware for buffalo
 // should be defined. This is the nerve center of your
@@ -27,6 +33,18 @@ func App() *buffalo.App {
 		app = buffalo.New(buffalo.Options{
 			Env:         ENV,
 			SessionName: "_pdf_tool_session",
+			Worker: gwa.New(gwa.Options{
+				Pool: &redis.Pool{
+					MaxActive: 5,
+					MaxIdle:   5,
+					Wait:      true,
+					Dial: func() (redis.Conn, error) {
+						return redis.Dial("tcp", ":6379")
+					},
+				},
+				Name:           "pdftool",
+				MaxConcurrency: 25,
+			}),
 		})
 
 		app.Use(forceSSL())
@@ -40,11 +58,17 @@ func App() *buffalo.App {
 
 		app.Use(translations())
 
+		w = app.Worker // Get a ref to the previously defined Worker
+		w.Register("process_pdf", func(args worker.Args) error {
+			workers.ProcessPDF(args)
+			return nil
+		})
+
 		app.GET("/", HomeHandler)
 		app.GET("/documents/{uuid}", DocumentsShow)
 		app.GET("/documents/{uuid}/download", DocumentDownload)
 		app.GET("/documents/{uuid}/preview", DocumentPreview)
-		app.GET("/documents/index", DocumentsIndex)
+		app.GET("/documents", DocumentsIndex)
 		app.POST("/documents/create", DocumentsCreate)
 
 		app.ServeFiles("/", assetsBox) // serve files from the public directory

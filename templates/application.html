@@ -10,25 +10,13 @@
     <link rel="icon" href="<%= assetPath("images/favicon.ico") %>">
   </head>
   <body>
-
-    <div class="container">
+    <div id="wrapper">
+      <%= partial("header.html") %>
       <%= partial("flash.html") %>
 
-      <header>
-        <div class="container">
-          <div class="row">
-            <div class="col-md-1 col-sm-2 col-xs-2 logo">
-              <a href="<%= rootPath() %>"><img src="<%= rootPath() %>assets/images/logo.svg" alt=""></a>
-            </div>
-            <div class="col-md-9 col-sm-9 col-xs-10 titles">
-              <h1><%= t("welcome_greeting") %></h1>
-            </div>
-          </div>
-        </div>
-      </header>
-
-
-      <%= yield %>
+      <div id="page-wrapper">
+        <%= yield %>
+      </div>
     </div>
 
     <%= javascriptTag("application.js") %>

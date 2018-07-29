@@ -1,0 +1,2 @@
+add_column("documents", "is_encrypted", "bool", {"default": false})
+add_column("documents", "metadata", "string", {"default": ""})

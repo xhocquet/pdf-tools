@@ -1,0 +1,2 @@
+drop_column("documents", "is_encrypted")
+drop_column("documents", "metadata")
