@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"time"
 
 	"github.com/gobuffalo/pop"
@@ -51,4 +52,21 @@ func (d *Document) ValidateCreate(tx *pop.Connection) (*validate.Errors, error) 
 // This method is not required and may be deleted.
 func (d *Document) ValidateUpdate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.NewErrors(), nil
+}
+
+func (d *Document) FilePath() string {
+	uuid := d.ID.String()
+	return filepath.Join(UploadsPath(), uuid)
+}
+
+func (d *Document) PagesPath() string {
+	uuid := d.ID.String()
+	pages_folder := uuid + "-pages"
+	return filepath.Join(UploadsPath(), pages_folder)
+}
+
+// private
+
+func UploadsPath() string {
+	return filepath.Join(".", "public/uploads")
 }

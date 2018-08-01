@@ -1,20 +1,19 @@
 package actions
 
 import (
-	"github.com/gobuffalo/buffalo/worker"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/buffalo/worker"
 	"github.com/gobuffalo/pop"
 	"github.com/pkg/errors"
 	"github.com/thedevsaddam/renderer"
 	"github.com/xhocquet/pdf_tool/models"
 )
 
-// DocumentsShow default implementation.
 func DocumentsShow(c buffalo.Context) error {
 	tx := c.Value("tx").(*pop.Connection)
 	uuid := c.Param("uuid")
@@ -34,21 +33,34 @@ func DocumentsShow(c buffalo.Context) error {
 
 func DocumentPreview(c buffalo.Context) error {
 	rnd := renderer.New()
+	tx := c.Value("tx").(*pop.Connection)
 	uuid := c.Param("uuid")
-	file_path := filePath(uuid)
 
-	return rnd.FileView(c.Response(), http.StatusOK, file_path, uuid)
+	document := models.Document{}
+	query := tx.Where("ID = ?", uuid)
+	err := query.First(&document)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return rnd.FileView(c.Response(), http.StatusOK, document.FilePath(), uuid)
 }
 
 func DocumentDownload(c buffalo.Context) error {
 	rnd := renderer.New()
+	tx := c.Value("tx").(*pop.Connection)
 	uuid := c.Param("uuid")
-	file_path := filePath(uuid)
 
-	return rnd.FileDownload(c.Response(), http.StatusOK, file_path, uuid)
+	document := models.Document{}
+	query := tx.Where("ID = ?", uuid)
+	err := query.First(&document)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return rnd.FileDownload(c.Response(), http.StatusOK, document.FilePath(), uuid)
 }
 
-// DocumentsIndex default implementation.
 func DocumentsIndex(c buffalo.Context) error {
 	tx := c.Value("tx").(*pop.Connection)
 
@@ -62,7 +74,6 @@ func DocumentsIndex(c buffalo.Context) error {
 	return c.Render(200, r.HTML("documents/index.html"))
 }
 
-// DocumentsCreate default implementation.
 func DocumentsCreate(c buffalo.Context) error {
 	file, err := c.File("uploadedFile")
 	if err != nil {
@@ -87,7 +98,7 @@ func DocumentsCreate(c buffalo.Context) error {
 	}
 
 	// Create system file
-	f, err := os.Create(filepath.Join(dir, document.ID.String()))
+	f, err := os.Create(document.FilePath())
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -108,12 +119,4 @@ func DocumentsCreate(c buffalo.Context) error {
 	})
 
 	return c.Redirect(302, "/documents/%s", document.ID)
-}
-
-// private
-
-func filePath(uuid string) string {
-	uploads_dir := filepath.Join(".", "public/uploads")
-	file_path := filepath.Join(uploads_dir, uuid)
-	return file_path
 }

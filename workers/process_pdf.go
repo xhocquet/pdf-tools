@@ -3,18 +3,17 @@ package workers
 import (
   "encoding/json"
   "os"
-  "path/filepath"
 
   "github.com/gobuffalo/buffalo/worker"
   "github.com/gobuffalo/pop"
-  pdf "github.com/unidoc/unidoc/pdf/model"
   "github.com/xhocquet/pdf_tool/models"
+
+  pdf "github.com/unidoc/unidoc/pdf/model"
 )
 
 func ProcessPDF(args worker.Args) {
   uuid := args["document_id"].(string)
   document := models.Document{}
-  file_path := filePath(uuid)
 
   err := models.DB.Transaction(func(tx *pop.Connection) error {
     query := tx.Where("ID = ?", uuid)
@@ -24,7 +23,7 @@ func ProcessPDF(args worker.Args) {
       return err
     }
 
-    f, err := os.Open(file_path)
+    f, err := os.Open(document.FilePath())
     if err != nil {
       return err
     }
@@ -67,12 +66,4 @@ func ProcessPDF(args worker.Args) {
   }
 
   return
-}
-
-// private
-
-func filePath(uuid string) string {
-  uploads_dir := filepath.Join(".", "public/uploads")
-  file_path := filepath.Join(uploads_dir, uuid)
-  return file_path
 }

@@ -15,7 +15,7 @@
             <tbody>
               <%= for (document) in documents { %>
                 <tr>
-                  <td><a href="#"><%= document.ID %></a></td>
+                  <td><a href="/documents/<%= document.ID %>"><%= document.ID %></a></td>
                   <td><%= document.Name %></td>
                   <td><%= document.PageCount %></td>
                   <td><%= document.CreatedAt %></td>
